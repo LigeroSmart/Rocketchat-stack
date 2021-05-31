@@ -1,10 +1,42 @@
 version: '3.4'
 
-services:    
+services:   
+
+
+  ingress:
+    image: traefik:v1.7
+    command: 
+      # - --api
+      - --docker
+      - --docker.watch=true 
+      - --docker.exposedbydefault=false
+      - --debug=false
+      - --logLevel=WARN
+      ## HTTP only (remove line above if HTTPS is active)
+      #- --entryPoints=Name:http Address::80
+      ## HTTPS
+      - --defaultentrypoints=https,http
+      - --entryPoints=Name:http Address::80 Redirect.EntryPoint:https
+      - --entryPoints=Name:https Address::443 TLS
+      ## letsencrypt
+      - --acme
+      - --acme.email=${ACME_EMAIL}
+      - --acme.storage=/ssl/acme.json
+      - --acme.entryPoint=https
+      - --acme.onHostRule=true
+      - --acme.httpchallenge.entrypoint=http
+      # other ssl
+      #- --entryPoints=Name:https Address::443 TLS:/ssl/www.mycert.com.crt,/ssl/www.mycert.com.key
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ssl:/ssl/
+    ports:
+      - 80:80
+      - 443:443 
+      
   rocketchat:
 
-    image: dockerhub.complemento.net.br/rocketchat:new-zenvia-api-integration
-    command: "node main.js"
+    image: rocketchat/rocket.chat
     environment:
       - PORT=3000
       - ROOT_URL=http://localhost:3000
@@ -14,7 +46,13 @@ services:
       - ADMIN_PASS=admin
     ports:
       - 3000:3000
-
+    labels:
+      - traefik.enable=true
+      - traefik.port=3000
+      - traefik.rocketchat-path.frontend.rule=Host:${ROCKETCHAT_FQDN}
+      - traefik.protocol=http
+      
+      
   mongo:
     image: mongo:4.0
     restart: unless-stopped
