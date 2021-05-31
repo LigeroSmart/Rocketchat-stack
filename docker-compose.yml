@@ -3,7 +3,7 @@ version: '3.4'
 services:    
   rocketchat:
 
-    image: dockerhub.complemento.net.br/rocketchat:new-zenvia-api-integration
+    image: rocketchat/rocket.chat:3.11.0
     command: "node main.js"
     environment:
       - PORT=3000
