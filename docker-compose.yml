@@ -36,7 +36,7 @@ services:
       
   rocketchat:
 
-    image: rocketchat/rocket.chat
+    image: rocketchat/rocket.chat:3.11.0
     environment:
       - PORT=3000
       - ROOT_URL=http://localhost:3000
